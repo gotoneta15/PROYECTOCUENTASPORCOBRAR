@@ -1,7 +1,8 @@
 """Rutas principales de la API (controlador)."""
 
 import os
-from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
+from functools import wraps
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, session, current_app
 from werkzeug.utils import secure_filename
 
 from app.services.importar_excel import importar_excel, COLUMNAS_ESPERADAS
@@ -20,7 +21,50 @@ bp = Blueprint("main", __name__)
 archivo_actual = {"nombre": None, "registros": None, "clientes_procesados": None}
 
 
+def login_requerido(f):
+    """Decorador que exige haber iniciado sesión para acceder a la ruta."""
+    @wraps(f)
+    def envoltura(*args, **kwargs):
+        if not session.get("usuario"):
+            return redirect(url_for("main.login"))
+        return f(*args, **kwargs)
+    return envoltura
+
+
+def usuario_valido(usuario, clave):
+    """Valida credenciales contra las variables de entorno APP_USUARIO y APP_CLAVE."""
+    usuario_env = os.getenv("APP_USUARIO")
+    clave_env = os.getenv("APP_CLAVE")
+    return usuario == usuario_env and clave == clave_env
+
+
+@bp.route("/login", methods=["GET", "POST"])
+def login():
+    """Pantalla de login: formulario de usuario y contraseña."""
+    error = None
+
+    if request.method == "POST":
+        usuario = request.form.get("usuario", "")
+        clave = request.form.get("clave", "")
+
+        if usuario_valido(usuario, clave):
+            session["usuario"] = usuario
+            return redirect(url_for("main.index"))
+        else:
+            error = "Usuario o contraseña incorrectos"
+
+    return render_template("login.html", error=error)
+
+
+@bp.route("/salir")
+def salir():
+    """Cierra la sesión y redirige al login."""
+    session.pop("usuario", None)
+    return redirect(url_for("main.login"))
+
+
 @bp.route("/")
+@login_requerido
 def index():
     """Pantalla de inicio: formulario para cargar el Excel de insumos."""
     return render_template(
@@ -32,6 +76,7 @@ def index():
 
 
 @bp.route("/cargar-archivo", methods=["POST"])
+@login_requerido
 def cargar_archivo():
     """Recibe el archivo Excel, valida columnas y lo almacena en memoria."""
     global archivo_actual
@@ -120,6 +165,7 @@ def cargar_archivo():
 
 
 @bp.route("/resultados")
+@login_requerido
 def resultados():
     """Pantalla de resultados: indicadores, semáforos, ranking de clientes."""
     if archivo_actual["registros"] is None:
@@ -210,6 +256,7 @@ def resultados():
 
 
 @bp.route("/cliente/<nombre_cliente>")
+@login_requerido
 def detalle_cliente(nombre_cliente):
     """Pantalla de detalle de un cliente específico."""
     if archivo_actual["clientes_procesados"] is None:
