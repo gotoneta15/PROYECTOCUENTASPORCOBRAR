@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle - {{ cliente.Cliente or cliente.cliente }} - Cartera360{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detalle-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .detalle-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .detalle-card h3 {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 0.5rem;
+    }
+
+    .detalle-valor {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #f8fafc;
+        margin: 0;
+    }
+
+    .detalle-valor-grande {
+        font-size: 2rem;
+        color: #38bdf8;
+    }
+
+    .campo-detalle {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #334155;
+    }
+
+    .campo-label {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .campo-valor {
+        color: #f8fafc;
+        font-weight: 600;
+    }
+
+    .seccion-agente {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .seccion-agente h3 {
+        color: #38bdf8;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .campo-agente {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #1e293b;
+    }
+
+    .btn-volver-resultados {
+        margin-bottom: 1.5rem;
+        display: inline-flex;
+    }
+
+    .badge-riesgo {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .riesgo-critico { background: #7f1d1d; color: #fecaca; }
+    .riesgo-alto { background: #7c2d12; color: #fdba74; }
+    .riesgo-medio { background: #713f12; color: #fcd34d; }
+    .riesgo-bajo { background: #14532d; color: #bbf7d0; }
+
+    .semaforo-rojo-badge { background: #ef4444; color: #fff; }
+    .semaforo-amarillo-badge { background: #f59e0b; color: #fff; }
+    .semaforo-verde-badge { background: #22c55e; color: #fff; }
+
+    .campo-boolean-si { color: #22c55e; font-weight: 700; }
+    .campo-boolean-no { color: #ef4444; font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('main.resultados') }}" class="btn btn-secondary btn-volver-resultados">
+    Volver al ranking
+</a>
+
+<h1>Detalle del Cliente</h1>
+<p style="color: #94a3b8; margin-bottom: 2rem;">
+    Desglose completo de saldos y recomendación del agente de IA para:
+    <strong>{{ cliente.Cliente or cliente.cliente }}</strong>
+</p>
+
+<!-- Datos principales del cliente -->
+<div class="detalle-grid">
+    <div class="detalle-card">
+        <h3>Cliente</h3>
+        <p class="detalle-valor">{{ cliente.Cliente or cliente.cliente }}</p>
+    </div>
+    <div class="detalle-card">
+        <h3>Ruta</h3>
+        <p class="detalle-valor">{{ cliente.Ruta or cliente.ruta or 'no indicado' }}</p>
+    </div>
+    <div class="detalle-card">
+        <h3>Unidad de Comercio</h3>
+        <p class="detalle-valor">{{ cliente.Unidad_Comercio or cliente.unidad_comercio or 'no indicado' }}</p>
+    </div>
+    <div class="detalle-card">
+        <h3>Fecha de Corte</h3>
+        <p class="detalle-valor">{{ cliente.Fecha_Corte or cliente.fecha_corte or 'no indicado' }}</p>
+    </div>
+    <div class="detalle-card">
+        <h3>Total Cartera</h3>
+        <p class="detalle-valor detalle-valor-grande">${{ "{:,.0f}".format(cliente.Total_Cartera or cliente.total_cartera or 0) }}</p>
+    </div>
+    <div class="detalle-card">
+        <h3>Nivel de Riesgo</h3>
+        <p>
+            <span class="badge-riesgo riesgo-{{ cliente.nivel_riesgo|lower }}">{{ cliente.nivel_riesgo }}</span>
+        </p>
+    </div>
+    <div class="detalle-card">
+        <h3>Semaforo</h3>
+        <p>
+            <span class="badge-riesgo semaforo-{{ cliente.semaforo|lower }}">{{ cliente.semaforo }}</span>
+        </p>
+    </div>
+</div>
+
+<!-- Desglose de saldos por rango -->
+<div class="detalle-card">
+    <h3>Desglose de Saldos por Rango</h3>
+    <div class="campo-detalle">
+        <span class="campo-label">Sin Vencer</span>
+        <span class="campo-valor">${{ "{:,.0f}".format(cliente.Sin_Vencer or 0) }} ({{ cliente.porcentaje_Sin_Vencer }}%)</span>
+    </div>
+    <div class="campo-detalle">
+        <span class="campo-label">Vencido 1-30 dias</span>
+        <span class="campo-valor">${{ "{:,.0f}".format(cliente.Vencido_1_30 or 0) }} ({{ cliente.porcentaje_Vencido_1_30 }}%)</span>
+    </div>
+    <div class="campo-detalle">
+        <span class="campo-label">Vencido 31-60 dias</span>
+        <span class="campo-valor">${{ "{:,.0f}".format(cliente.Vencido_31_60 or 0) }} ({{ cliente.porcentaje_Vencido_31_60 }}%)</span>
+    </div>
+    <div class="campo-detalle">
+        <span class="campo-label">Vencido 61-90 dias</span>
+        <span class="campo-valor">${{ "{:,.0f}".format(cliente.Vencido_61_90 or 0) }} ({{ cliente.porcentaje_Vencido_61_90 }}%)</span>
+    </div>
+    <div class="campo-detalle">
+        <span class="campo-label">Vencido mas 90 dias</span>
+        <span class="campo-valor">${{ "{:,.0f}".format(cliente.Vencido_Mas_90 or 0) }} ({{ cliente.porcentaje_Vencido_Mas_90 }}%)</span>
+    </div>
+    <div class="campo-detalle">
+        <span class="campo-label">Total Vencidos</span>
+        <span class="campo-valor">${{ "{:,.0f}".format(cliente.vencidos_totales or 0) }} ({{ cliente.porcentaje_vencido }}%)</span>
+    </div>
+    <div class="campo-detalle">
+        <span class="campo-label">Vencidos mas 30 dias</span>
+        <span class="campo-valor">${{ "{:,.0f}".format(cliente.vencidos_mas_30_dias or 0) }} ({{ cliente.porcentaje_Vencido_31_60 + cliente.porcentaje_Vencido_61_90 + cliente.porcentaje_Vencido_Mas_90 }}%)</span>
+    </div>
+</div>
+
+<!-- Recomendacion del agente de IA -->
+<div class="seccion-agente">
+    <h3>Recomendacion del Agente de IA</h3>
+    <div class="campo-agente">
+        <span class="campo-label">Accion recomendada</span>
+        <span class="campo-valor">{{ cliente.accion_recomendada or 'no indicado' }}</span>
+    </div>
+    <div class="campo-agente">
+        <span class="campo-label">Motivo</span>
+        <span class="campo-valor">{{ cliente.motivo or 'no indicado' }}</span>
+    </div>
+    <div class="campo-agente">
+        <span class="campo-label">Suspender credito</span>
+        <span class="campo-valor {% if cliente.suspender_credito == 'Si' or cliente.suspender_credito == True %}campo-boolean-si{% else %}campo-boolean-no{% endif %}">
+            {{ cliente.suspender_credito or 'no indicado' }}
+        </span>
+    </div>
+    <div class="campo-agente">
+        <span class="campo-label">Escalar gerencia</span>
+        <span class="campo-valor {% if cliente.escalar_gerencia == 'Si' or cliente.escalar_gerencia == True %}campo-boolean-si{% else %}campo-boolean-no{% endif %}">
+            {{ cliente.escalar_gerencia or 'no indicado' }}
+        </span>
+    </div>
+    <div class="campo-agente">
+        <span class="campo-label">Enviar recordatorio</span>
+        <span class="campo-valor {% if cliente.enviar_recordatorio == 'Si' or cliente.enviar_recordatorio == True %}campo-boolean-si{% else %}campo-boolean-no{% endif %}">
+            {{ cliente.enviar_recordatorio or 'no indicado' }}
+        </span>
+    </div>
+</div>
+{% endblock %}

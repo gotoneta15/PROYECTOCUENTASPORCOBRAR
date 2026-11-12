@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Cartera360{% endblock %}
+
+{% block content %}
+<h1>Cartera360</h1>
+<p style="color: #94a3b8; margin-bottom: 2rem;">
+    Análisis de antigüedad de saldos de cuentas por cobrar. Sube el archivo Excel de insumos para comenzar.
+</p>
+
+{% if error %}
+<div class="alert alert-error">
+    {{ error }}
+</div>
+{% endif %}
+
+{% if mensaje_exito %}
+<div class="alert alert-success">
+    {{ mensaje_exito }}
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Cargar archivo de insumos</h2>
+    <p style="color: #94a3b8; margin-bottom: 1.5rem;">
+        Selecciona el archivo Excel con los datos de cartera. Debe contener las columnas:
+        <strong>Fecha_Corte, Unidad_Comercio, Ruta, Cliente, Sin_Vencer, Vencido_1_30, Vencido_31_60, Vencido_61_90, Vencido_Mas_90, Total_Cartera</strong>.
+    </p>
+
+    <form method="post" enctype="multipart/form-data" action="{{ url_for('main.cargar_archivo') }}">
+        <div class="form-group">
+            <label class="form-label" for="archivo_excel">Archivo Excel de insumos</label>
+            <input type="file" class="form-control" id="archivo_excel" name="archivo_excel" accept=".xlsx,.xls" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+            Procesar archivo
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Archivo actual</h2>
+    {% if archivo_actual %}
+    <p style="color: #cbd5e1;">
+        <strong>Nombre:</strong> {{ archivo_actual }}<br>
+        <strong>Estado:</strong> Cargado y listo para procesar
+    </p>
+    <a href="{{ url_for('main.resultados') }}" class="btn btn-primary">
+        Ver resultados
+    </a>
+    {% else %}
+    <p style="color: #94a3b8;">
+        No se ha cargado ningún archivo aún. Sube un archivo Excel para comenzar el análisis.
+    </p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Columnas esperadas</h2>
+    <table class="table-container">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Columna</th>
+                <th>Descripción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td>Fecha_Corte</td><td>Fecha de corte del reporte</td></tr>
+            <tr><td>2</td><td>Unidad_Comercio</td><td>Unidad comercial</td></tr>
+            <tr><td>3</td><td>Ruta</td><td>Ruta de asignación del cliente</td></tr>
+            <tr><td>4</td><td>Cliente</td><td>Nombre del cliente</td></tr>
+            <tr><td>5</td><td>Sin_Vencer</td><td>Saldo sin vencer</td></tr>
+            <tr><td>6</td><td>Vencido_1_30</td><td>Vencido de 1 a 30 días</td></tr>
+            <tr><td>7</td><td>Vencido_31_60</td><td>Vencido de 31 a 60 días</td></tr>
+            <tr><td>8</td><td>Vencido_61_90</td><td>Vencido de 61 a 90 días</td></tr>
+            <tr><td>9</td><td>Vencido_Mas_90</td><td>Vencido mayor a 90 días</td></tr>
+            <tr><td>10</td><td>Total_Cartera</td><td>Total de cartera del cliente</td></tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

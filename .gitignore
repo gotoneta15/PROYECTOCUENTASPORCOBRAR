@@ -1,0 +1,42 @@
+# =============================================================================
+# Archivo .gitignore - Cartera360
+# Archivos y carpetas que NO deben subirse a GitHub
+# =============================================================================
+
+# Variables de entorno (contiene llaves de API)
+.env
+
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+env/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Carpetas de instancia y salida (archivos de usuario y generados)
+instance/
+salida/
+
+# Caché de pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Empaquetado
+*.egg-info/
+dist/
+build/
+
+# Archivos temporales de Excel
+~$*
